@@ -22,7 +22,8 @@ case $env_choice in
         BRANCH="test"
         ;;
     3)
-        PLAYBOOK="playbook-prod"  # Make sure this file exists
+
+        PLAYBOOK="playbook-prod.yml"  # Make sure this file exists
         BRANCH="main"
         ;;
     *)
