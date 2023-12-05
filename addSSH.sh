@@ -8,3 +8,9 @@ if [ -f ~/.ssh/id_rsa ]
 then
   ssh-add ~/.ssh/id_rsa
 fi
+
+# if the public key is not present in the authorized_keys file
+if ! grep -q "$(cat ~/.ssh/id_rsa.pub)" ~/.ssh/authorized_keys
+then
+  cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+fi
