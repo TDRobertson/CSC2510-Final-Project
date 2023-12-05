@@ -1,0 +1,110 @@
+---
+  - name: Apache2 and NodeJS
+    hosts: webservers databaseservers
+    tasks: 
+      - name: Install Apache2
+        apt:
+          name: apache2
+          state: latest
+      - name: Install NodeJS
+        apt:
+          name: nodejs
+          state: latest
+          
+    # Install MariaDB on database servers for Dev Environment      
+  - name: MariaDB
+    hosts: databaseservers
+    tasks:
+      - name: Install MariaDB
+        apt:
+          name: mariadb-server
+          state: latest
+          
+  - name: Set up SSH keys
+    hosts: webservers databaseservers
+    become: yes
+    vars:
+      ssh_user: tdrobertso42
+      ssh_public_key: "{{ lookup('file', '/home/tdrobertso42/.ssh/id_rsa.pub') }}"
+      ssh_private_key: "/home/tdrobertso42/.ssh/id_rsa"
+    tasks:
+      - name: Add SSH key to authorized keys
+        ansible.builtin.authorized_key:
+          user: "{{ ssh_user }}"
+          state: present
+          key: "{{ ssh_public_key }}"
+
+      - name: Copy Private SSH key
+        copy: 
+          src: "{{ ssh_private_key }}"
+          dest: "/home/{{ ssh_user }}/.ssh/id_rsa"
+          owner: "{{ ssh_user }}"
+          group: "{{ ssh_user }}"
+          mode: '0600'
+        when: ssh_private_key is defined
+
+  - name: Upload SSH Setup Script
+    hosts: webservers databaseservers
+    tasks:
+    - name: Copy SSH Setup Script
+      copy:
+        src: /home/tdrobertso42/ansible_playbooks/sshMake.sh
+        dest: /tmp/sshMake.sh
+        mode: '0755'
+      become: yes
+
+  - name: Execute SSH Setup Script
+    hosts: webservers databaseservers
+    become: yes
+    tasks:
+      - name:
+        command: /tmp/sshMake.sh
+        become: yes
+          
+          
+    # Fix this section
+  - name: Deploy Web Application
+    hosts: webservers databaseservers
+    vars:
+      repo_url: "git@github.com:ttu-bburchfield/swollenhippofinal.git"
+      # Use different branches or settings for each environment 
+      branch_name: "{{ branch }}" # Change for each environment.
+      destination: "/testrepo/"
+      # shell_script: "/home/tdrobertso42/ansible_playbooks/deploy-webapps-playbook.sh"
+    tasks:
+      - name: Install Git 
+        apt:
+          name: git
+          state: latest
+          
+      - name: Check if the git repo already exists
+        stat:
+          path: "{{ destination }}/.git"
+        register: git_repo
+          
+      - name: Clone Repository
+        git:
+          repo: "{{ repo_url }}"
+          dest: "{{ destination }}"
+          version: "{{ branch_name }}"
+          clone: yes
+          update: yes
+        when: not git_repo.stat.exists
+        
+      - name: Pull latest changes in Repository
+        git:
+          repo: "{{ repo_url }}"
+          dest: "{{ destination }}"
+          version: "{{ branch_name }}"
+          update: yes
+        when: git_repo.stat.exists
+        
+      #- name: Set permissions for the deployment script.
+       # file:
+        #  path: "/home/tdrobertso42/ansible_playbooks/deploy-webapps-playbook.sh"
+         # mode: '0755'          
+        
+      #- name: Run Deployment Script
+       # shell: "{{ shell_script }}"
+        #args:
+         # chdir: "{{ destination }}"
