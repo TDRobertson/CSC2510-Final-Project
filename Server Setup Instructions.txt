@@ -1,0 +1,54 @@
+Create 7 total servers
+1 ansiible management server running centOS
+3 web servers running Debian that allow http and https traffic
+3 webserver + database server hybrids that run Debian and allow http and https traffic.
+
+After servers are setup:
+1) Change the root password for all of the vms by using sudo passwd (enter password) to something you will store in cleartext later on.
+2) Then on all the Debian servers change the /etc/ssh/sshd_config using sudo nano and change PermitRootLogin to yes and change PasswordAuthentication to yes. You can save your changes using ctrl + x then entering y.
+(Optionally change password authentication on the AMS server as well if you plan on remotely controlling it outside of gcp).
+3) Install ansible on the AMS using sudo yum install ansible and accept all dependencies.
+4) Navigate to the ansible config file on the AMS using sudo nano /etc/ansible/ansible.cfg
+(Note: You will need to install nano on the AMS, as it does not come pre-installed with centOS servers, use sudo yum install nano).
+5) In the ansible.cfg file uncomment the host_key_checking = False command around line 71.
+6) Now navigate to the AMS ansible host file using sudo nano /etc/ansible/hosts and set up all the groups for the webservers and hybrid servers using their internal IPs (which wont change between sessions) and adding in the ansible_user and ansible_password in grouped variables. (IMPORTANT: Spelling must be EXACTLY the same, or it will not work)
+Note* Logging in as root gives us elevated permissions for installing/running everything on the remote servers.
+ex:
+# Grouped Webservers Dev Env
+ [webserversdev]
+ 10.128.0.30
+
+ [webserversdev:vars]
+ ansible_user=root
+ ansible_password=Mickey2023!
+
+# Grouped Database Servers Dev Env
+ [hybridsdev]
+ 10.128.0.31
+
+ [hybridsdev:vars]
+ ansible_user=root
+ ansible_password=Mickey2023!
+
+# Grouped Webservers Test  Env
+ [webserverstest]
+ 10.128.0.26
+
+ [webserverstest:vars]
+ ansible_user=root
+ ansible_password=Mickey2023!
+
+# Grouped Database Servers Test Env
+ [hybridstest]
+ 10.128.0.27
+
+ [hybridstest:vars]
+ ansible_user=root
+ ansible_password=Mickey2023!
+
+7) Set up your ssh authentication key on the AMS default directory.
+8) Once the above steps are completed restart all of the servers to finalize changes.
+9) Log back into the AMS and create and move into a ansible_playbooks directory where you will store your playbooks and bash scripts.
+10) Copy the provided playbooks and scripts into the directory.
+11) Run the 
+ 
