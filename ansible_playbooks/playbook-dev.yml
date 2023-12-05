@@ -118,29 +118,46 @@
     hosts: webserversdev hybridsdev
     vars:
       # The URL of the Git repository to clone from
-      repo_url: "git@github.com:TDRobertson/CSC2510-001-GitIntro-Solo.git"
-      dest: "/root/CSC2510-001-GitIntro-Solo"
+      repo_url: "git@github.com:ttu-bburchfield/swollenhippofinal.git"
+      dest: "/root/test"
     tasks:
-      # Check if directory exists already
-      - name: Check if directory exists
+      # Check if directory exists
+      - name: Check if the directory exists
         ansible.builtin.stat:
           path: "{{ dest }}"
         register: repo_exists
-      # Clone Repository if it doesn't already exist
+
+      # Create the directory if it doesn't exist
+      - name: Create the directory if it doesn't exist
+        ansible.builtin.file:
+          path: "{{ dest }}"
+          state: directory
+        when: not repo_exists.stat.exists
+
+      # Check if the directory is empty if it exists
+      - name: Check if the directory is empty if it exists
+        ansible.builtin.command: find "{{ dest }}" -mindepth 1 -print -quit
+        register: is_directory_empty
+        changed_when: False
+        failed_when: False
+        check_mode: no
+        when: repo_exists.stat.exists
+
+      # Clone Repository if it doesn't already exist or is empty
       - name: Clone Repository
         ansible.builtin.git:
           repo: "{{ repo_url }}"
           dest: "{{ dest }}"
           version: main
-          clone: yes
-        when: repo_exists.stat.exists == False
-      # Pull Repository if it already exists
-      - name: Pull Repository
+        when: not repo_exists.stat.exists or is_directory_empty.stdout == ""
+
+      # Update Repository if it already exists and is not empty
+      - name: Update Repository
         ansible.builtin.git:
           repo: "{{ repo_url }}"
           dest: "{{ dest }}"
           version: main
-          pull: yes
-        when: repo_exists.stat.exists == True
+          update: yes
+        when: repo_exists.stat.exists and is_directory_empty.stdout != ""
 
 
