@@ -1,0 +1,103 @@
+---
+    # Install Apache2 and NodeJS on web servers for Dev Environment
+  - name: Install Packages for Dev Environment
+    # host targets
+    hosts: webserversdev hybridsdev
+    # tasks to run on the host targets to install Apache2 and NodeJS
+    tasks: 
+      # Install Apache2
+      - name: Install Apache2
+        apt:
+          name: apache2
+          # ensure that Apache2 is installed and the latest version
+          state: latest
+      # install NodeJS
+      - name: Install NodeJS
+        apt:
+          name: nodejs
+          # ensure that NodeJS is installed and the latest version
+          state: latest
+      # Install Git
+      - name: Install Git
+        apt:
+          name: git
+          # ensure that Git is installed and the latest version
+          state: latest
+
+    # Install MariaDB on hybrid servers for Dev Environment
+  - name: Install MariaDB for Hyrbid Servers on Test Environment
+    hosts: hybridsdev
+    tasks:
+      - name: Install MariaDB
+        apt:
+          name: mariadb-server
+          state: latest
+
+
+    # Set up SSH keys on web and hybrid servers for Dev Environment by copying the public key to the authorized_keys file and copying the private key to the .ssh directory
+  - name: Set up SSH keys
+    hosts: webserversdev hybridsdev
+    become: yes
+    # the user to add the SSH key from
+    vars:
+      ssh_user: root
+      ssh_public_key: "{{ lookup('file', '/home/tdrobertso42/.ssh/id_rsa.pub') }}"
+      ssh_private_key: "{{ lookup('file', '/home/tdrobertso42/.ssh/id_rsa') }}"
+      # tasks to run on the host targets to set up SSH keys
+    tasks:
+      # Ensure SSH directory exists
+      - name: Ensure SSH directory exists
+        ansible.builtin.file:
+          path: "/root/.ssh"
+          state: directory
+          mode: '0700'
+      # Add SSH key to authorized keys
+      - name: Add SSH key to authorized keys
+        ansible.builtin.authorized_key:
+          user: "{{ ssh_user }}"
+          state: present
+          key: "{{ ssh_public_key }}"
+
+      # copy the private key to the .ssh directory
+      - name: Copy Private SSH key
+        copy: 
+          content: "{{ ssh_private_key }}"
+          dest: "/root/.ssh/id_rsa"
+          owner: "{{ ssh_user }}"
+          group: "{{ ssh_user }}"
+          mode: '0600'
+        when: ssh_private_key is defined
+
+ # Upload SSH Setup Script
+  - name: Upload SSH Setup Script
+    hosts: webserversdev hybridsdev
+    tasks:
+    - name: Copy SSH Setup Script
+      copy:
+        src: /home/tdrobertso42/ansible_playbooks/addSSH.sh
+        dest: /tmp/addSSH.sh
+        mode: '0755'
+      become: yes
+
+  # Execute SSH Setup Script
+  - name: Execute SSH Setup Script
+    hosts: webserversdev hybridsdev
+    become: yes
+    tasks:
+      - name:
+        command: /tmp/addSSH.sh
+        become: yes
+         
+   # Add github to known hosts
+  - name: Add github to known hosts
+    hosts: webserversdev hybridsdev
+    become: yes
+    tasks:
+      - name: Add github to known hosts
+        ansible.builtin.known_hosts:
+          name: github.com
+          key: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
+          state: present
+
+          
+
