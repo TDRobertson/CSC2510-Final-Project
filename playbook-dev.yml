@@ -97,21 +97,32 @@
       # The specific branch to clone from
       branch_name: "{{ branch }}" # Change for each environment.
       # Set the destination to the web root for the environment
-      destination: "/var/www/html"
+      destination: "/var/www/html/myapp"
     # Install Git, clone the repository, and pull the latest changes
     tasks:
       - name: Install Git 
         apt:
           name: git
           state: latest
+        # Add GitHub to known hosts to prevent the prompt to add it
+      - name: Add GitHub to known hosts
+        ansible.builtin.lineinfile:
+          # The path to the known_hosts file
+          path: ~/.ssh/known_hosts
+          # The line to add to the known_hosts file
+          line: "{{ lookup('pipe', 'ssh-keyscan github.com') }}"
+          # Create the known_hosts file if it doesn't exist
+          create: yes
+          state: present
       # Check if the git repo already exists and clone it if it doesn't
       - name: Check if the git repo already exists
         stat:
           path: "{{ destination }}/.git"
         register: git_repo
-      # Clone the repository if it doesn't exist
+      # Clone the repository if it doesn't exist with root permissions
       - name: Clone Repository
         git:
+          become: yes
           repo: "{{ repo_url }}"
           dest: "{{ destination }}"
           version: "{{ branch_name }}"
