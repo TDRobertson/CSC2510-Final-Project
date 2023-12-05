@@ -36,14 +36,15 @@
     # Set up SSH keys on web and hybrid servers for Test Environment by copying the public key to the authorized_keys file and copying the private key to the .ssh directory
   - name: Set up SSH keys
     hosts: webservers hybridservers
+    remote_user: root
     become: yes
     vars:
       # the user to add the SSH key to
-      ssh_user: root
+      ssh_user: tdrobertso42
       # the public key to add to the authorized_keys file
-      ssh_public_key: "{{ lookup('file', '/home/root/.ssh/id_rsa.pub') }}"
+      ssh_public_key: "{{ lookup('file', '/home/tdrobertso42/.ssh/id_rsa.pub') }}"
       # the private key to copy to the .ssh directory
-      ssh_private_key: "/home/root/.ssh/id_rsa"
+      ssh_private_key: "/home/tdrobertso42/.ssh/id_rsa"
     # tasks to run on the host targets to set up SSH keys
     tasks:
       - name: Add SSH key to authorized keys
