@@ -41,31 +41,39 @@
     # the user to add the SSH key from
     vars:
       ssh_user: root
+      # the public key to add to the authorized_keys file from ansible management server
       ssh_public_key: "{{ lookup('file', '/home/tdrobertso42/.ssh/id_rsa.pub') }}"
+      # the private key to copy to the .ssh directory from ansible management server
       ssh_private_key: "{{ lookup('file', '/home/tdrobertso42/.ssh/id_rsa') }}"
       # tasks to run on the host targets to set up SSH keys
     tasks:
       # Ensure SSH directory exists
       - name: Ensure SSH directory exists
+      # Ensure the .ssh directory exists using ansible builtin file module
         ansible.builtin.file:
           path: "/root/.ssh"
           state: directory
           mode: '0700'
       # Add SSH key to authorized keys
       - name: Add SSH key to authorized keys
+      # add the public key to the authorized_keys file using ansible builtin authorized_key module
         ansible.builtin.authorized_key:
           user: "{{ ssh_user }}"
           state: present
+          # add the public key to the authorized_keys file
           key: "{{ ssh_public_key }}"
 
       # copy the private key to the .ssh directory
       - name: Copy Private SSH key
         copy: 
           content: "{{ ssh_private_key }}"
+          # the destination of the private key for root user
           dest: "/root/.ssh/id_rsa"
           owner: "{{ ssh_user }}"
           group: "{{ ssh_user }}"
+          # set permissions of the private key
           mode: '0600'
+          # only copy the private key if it exists
         when: ssh_private_key is defined
 
  # Upload SSH Setup Script
@@ -74,8 +82,10 @@
     tasks:
     - name: Copy SSH Setup Script
       copy:
+      # Copy the SSH Setup Script from Management server to target servers
         src: /home/tdrobertso42/ansible_playbooks/addSSH.sh
         dest: /tmp/addSSH.sh
+        # Set permissions of the SSH Setup Script
         mode: '0755'
       become: yes
 
@@ -85,6 +95,7 @@
     become: yes
     tasks:
       - name:
+      # Run the SSH Setup Script
         command: /tmp/addSSH.sh
         become: yes
          
@@ -94,10 +105,42 @@
     become: yes
     tasks:
       - name: Add github to known hosts
+      # Add github to known hosts using ansible builtin known_hosts module
         ansible.builtin.known_hosts:
           name: github.com
+          # Use pipe lookup plugin to run ssh-keyscan command to get the public key of github.com
           key: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
           state: present
 
           
+  # Clone the repository to target servers for Dev Environment
+  - name: Clone Repository
+    hosts: webserversdev hybridsdev
+    vars:
+      # The URL of the Git repository to clone from
+      repo_url: "git@github.com:TDRobertson/CSC2510-001-GitIntro-Solo.git"
+      dest: "/root/CSC2510-001-GitIntro-Solo"
+    tasks:
+      # Check if directory exists already
+      - name: Check if directory exists
+        ansible.builtin.stat:
+          path: "{{ dest }}"
+        register: repo_exists
+      # Clone Repository if it doesn't already exist
+      - name: Clone Repository
+        ansible.builtin.git:
+          repo: "{{ repo_url }}"
+          dest: "{{ dest }}"
+          version: main
+          clone: yes
+        when: repo_exists.stat.exists == False
+      # Pull Repository if it already exists
+      - name: Pull Repository
+        ansible.builtin.git:
+          repo: "{{ repo_url }}"
+          dest: "{{ dest }}"
+          version: main
+          pull: yes
+        when: repo_exists.stat.exists == True
+
 
