@@ -1,5 +1,5 @@
 ---
-    # Install Apache2 and NodeJS on web servers for Dev Environment
+    # Install Install Apache2, NodeJS, and Git on Web Servers and Hybrid Servers for Dev Environments
   - name: Install Packages for Dev Environment
     # host targets
     hosts: webserversdev hybridsdev
@@ -119,6 +119,7 @@
     vars:
       # The URL of the Git repository to clone from
       repo_url: "git@github.com:ttu-bburchfield/swollenhippofinal.git"
+      branch_name: "{{ branch }}" # Change for each environment.
       dest: "/root/test"
     tasks:
       # Check if directory exists
@@ -148,7 +149,7 @@
         ansible.builtin.git:
           repo: "{{ repo_url }}"
           dest: "{{ dest }}"
-          version: main
+          version: "{{ branch_name }}"
         when: not repo_exists.stat.exists or is_directory_empty.stdout == ""
 
       # Update Repository if it already exists and is not empty
@@ -156,7 +157,7 @@
         ansible.builtin.git:
           repo: "{{ repo_url }}"
           dest: "{{ dest }}"
-          version: main
+          version: "{{ branch_name }}"
           update: yes
         when: repo_exists.stat.exists and is_directory_empty.stdout != ""
 

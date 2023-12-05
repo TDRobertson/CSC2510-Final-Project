@@ -1,0 +1,37 @@
+---
+    # Install Apache2, NodeJS, and Git on Web Servers and Hybrid Servers for All Environments
+  - name: Install Packages for Dev Environment
+    # host targets put all hosts in the inventory file
+    hosts: webserversdev hybridsdev webserverstest hybridstest webserversprod hybridsprod
+    # tasks to run on the host targets to install Apache2 and NodeJS
+    tasks: 
+      # Install Apache2
+      - name: Install Apache2
+        apt:
+          name: apache2
+          # ensure that Apache2 is installed and the latest version
+          state: latest
+      # install NodeJS
+      - name: Install NodeJS
+        apt:
+          name: nodejs
+          # ensure that NodeJS is installed and the latest version
+          state: latest
+      # Install Git
+      - name: Install Git
+        apt:
+          name: git
+          # ensure that Git is installed and the latest version
+          state: latest
+
+  # Install MariaDB on Hybrid Servers for All Environments
+  - name: Install MariaDB for Hyrbid Servers on Test Environment
+    # host targets put all hybrid servers in the inventory file
+    hosts: hybridsdev hybridstest hybridsprod
+    tasks:
+      - name: Install MariaDB
+        apt:
+          # install MariaDB
+          name: mariadb-server
+          # ensure that MariaDB is installed and the latest version
+          state: latest
