@@ -14,15 +14,15 @@ read -p "Enter choice (1/2/3): " env_choice
 # Determine the playbook and branch based on the choice
 case $env_choice in
     1)
-        PLAYBOOK="dev-playbook.yml"  # Make sure this file exists
+        PLAYBOOK="playbook-dev.yml"  # Make sure this file exists
         BRANCH="dev"
         ;;
     2)
-        PLAYBOOK="test-playbook.yml"  # Make sure this file exists
+        PLAYBOOK="playbook-test.yml"  # Make sure this file exists
         BRANCH="test"
         ;;
     3)
-        PLAYBOOK="prod-playbook.yml"  # Make sure this file exists
+        PLAYBOOK="playbook-prod.yml"  # Make sure this file exists
         BRANCH="main"
         ;;
     *)
