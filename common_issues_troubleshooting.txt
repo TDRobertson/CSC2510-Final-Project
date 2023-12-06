@@ -1,0 +1,52 @@
+There will be several common issues that can be experienced throughout the server setup, most of them have been addressed in their relevant file sections. 
+But I will also cover expected problems that might occur in this file. Note that Stack Overflow is a valuable resource for solving many problems.
+
+1. Server setup
+When setting up the servers on Google Cloud Platform, make sure your ansible management server is set up with centOS, if you use Debian servers
+you will have to manually set up all the required folders for ansible. As opposed to just installing it.
+Make sure that the webservers and database server hybrids allow http and https traffic, or you will not be able to issue certain commands.
+
+Try and set the servers up on different server locations, if all servers are on the same region node, and that host node goes down you will not
+be able to interact with any of the servers until that nodes services come back up.
+
+Ensure all ansible playbook files and bash scripts are located within the same directory on the Ansible Management Server, otherwise you will need to
+make changes to many scripts to accomadate your preferred environment settings.
+
+Permission Denials:
+This is usually caused because either you didn't set up a new root password on EACH vm, or because you have the ip addresses or server variables
+wrong in the host file. If you get this error manually change all the root password and double check your host.ini file to ensure there are no errors.
+THE SPELLING IN THE HOST FILE MUST EXACTLY MATCH, any incorrect spelling WILL break the group hosts abilities to operate properly.
+
+Required Packages:
+The ansible management server uses centOS for its OS, as such it does not come installed with various packages and libraries. You will need to manually install
+nano, git, ansible, and cron jobs. You can do this using sudo yum install commandnamehere.
+The Debian servers will not need any manual installations, everything they need will be covered by the ansible playbooks.
+
+Ansible Playbooks:
+Ansible playbooks use YAML for their language. YAML is whitespace sensitive. Probably the most common issues you find from setting these up will be caused by 
+improper white spacing between lines. all new lines will be 2 spaces over relative to the Play you are currently working on.
+Example:
+
+---
+  - name: Example for YAML Play
+    vars: vars needed for play
+    tasks:
+      - name: name of play (notice how its 2 whitespaces over from the start of tasks)
+        command: this command will be executed with relevant vars.
+          action: implements action for command (notice how its 2 whitespaces over from the start of command)
+
+Other common issues will be caused by permission problems associated with bash files you pass or ssh keys you copy to remote hosts. Remember in this setup we are running 
+commands on the hosts as root user. So all SSH keys will need to be uploaded to the respective root directories FROM the remote users source folders. 
+The public key should go to the authorized_key file to allow ssh connections and the private key needs to be specified to the .ssh folder to allow authentication 
+for git cloning. Ensure the ssh key folders have the correct permissions 0600 specified in the ansible play so they can be used properly. And ensure the bash scripts
+you have to copy from the AMS and send over to the hosts also have execute privileges specified in its ansible play as well.
+
+Note that if you get any errors from running your ansible playbooks, it will give you a distinct message after running each play to help you navigate and find out what 
+the specific error is. Googling the problem for Stack Overflow documentation is a good first step to solving the issues if you don't already know how.
+
+Bash Scripts:
+Ensure all bash scripts on the AMS have the proper privileges to run using chmod 755 to set the owner, group, and others permissions (or any variation of permissions as needed).
+the plays and scripts will all have PATH variables that will need changed to be specific to your AMS environments username. The provided scripts have error handling methods
+that should prevent most general issues from inproper user inputs. If you make your own scripts, make sure to include error handling and check methods for any expected
+issues you think may arise from improper handling. Ensure that all scripts follow the same directory setup locations I have used if you are copying my files. As I have 
+specifically set my playbooks, scripts, and cronjobs to work off those directories.
