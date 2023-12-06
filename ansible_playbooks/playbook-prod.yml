@@ -1,8 +1,8 @@
 ---
-    # Install Install Apache2, NodeJS, and Git on Web Servers and Hybrid Servers for Dev Environments
-  - name: Install Packages for Dev Environment
+    # Install Install Apache2, NodeJS, and Git on Web Servers and Hybrid Servers for Prod Environments
+  - name: Install Packages for Prod Environment
     # host targets
-    hosts: webserversdev hybridsdev
+    hosts: webserversprod hybridsprod
     # tasks to run on the host targets to install Apache2 and NodeJS
     tasks: 
       # Install Apache2
@@ -24,9 +24,9 @@
           # ensure that Git is installed and the latest version
           state: latest
 
-    # Install MariaDB on hybrid servers for Dev Environment
+    # Install MariaDB on hybrid servers for Prod Environment
   - name: Install MariaDB for Hyrbid Servers on Test Environment
-    hosts: hybridsdev
+    hosts: hybridsprod
     tasks:
       - name: Install MariaDB
         apt:
@@ -34,9 +34,9 @@
           state: latest
 
 
-    # Set up SSH keys on web and hybrid servers for Dev Environment by copying the public key to the authorized_keys file and copying the private key to the .ssh directory
+    # Set up SSH keys on web and hybrid servers for Prod Environment by copying the public key to the authorized_keys file and copying the private key to the .ssh directory
   - name: Set up SSH keys
-    hosts: webserversdev hybridsdev
+    hosts: webserversprod hybridsprod
     become: yes
     # the user to add the SSH key from
     vars:
@@ -78,7 +78,7 @@
 
  # Upload SSH Setup Script
   - name: Upload SSH Setup Script
-    hosts: webserversdev hybridsdev
+    hosts: webserversprod hybridsprod
     tasks:
     - name: Copy SSH Setup Script
       copy:
@@ -91,7 +91,7 @@
 
   # Execute SSH Setup Script
   - name: Execute SSH Setup Script
-    hosts: webserversdev hybridsdev
+    hosts: webserversprod hybridsprod
     become: yes
     tasks:
       - name:
@@ -101,7 +101,7 @@
          
    # Add github to known hosts
   - name: Add github to known hosts
-    hosts: webserversdev hybridsdev
+    hosts: webserversprod hybridsprod
     become: yes
     tasks:
       - name: Add github to known hosts
@@ -113,9 +113,9 @@
           state: present
 
           
-  # Clone the repository to target servers for Dev Environment
+  # Clone the repository to target servers for Prod Environment
   - name: Clone Repository
-    hosts: webserversdev hybridsdev
+    hosts: webserversprod hybridsprod
     vars:
       # The URL of the Git repository to clone from
       repo_url: "git@github.com:ttu-bburchfield/swollenhippofinal.git"

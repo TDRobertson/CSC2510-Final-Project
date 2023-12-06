@@ -1,0 +1,7 @@
+# Add this cron job using cronjob -e on your Ansible Management Server and copy pasting the command on line 7
+# See server setup instructions for activating and installing cronjobs
+# Follows the format:
+# m h dom month dow command arguments
+# minute hour day_of_month day_of_week command_to_run target_of_command_if_applicable arguments_if_applicable
+
+* * * * * cd /home/tdrobertso42/ansible_playbooks && /home/tdrobertso42/ansible_playbooks/deploy-playbooks.sh 4
