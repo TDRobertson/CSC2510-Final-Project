@@ -3,7 +3,9 @@ CSC2510-Final-Project
 
 YOUTUBE PLAYLIST LINKS FOR VISUAL GUIDES:
 Playlist link: https://www.youtube.com/playlist?list=PLGAWosIlmkk8iI2OqVyvkXCwwLPJSW_l0 
+
 PART 1 SERVER SETUP: https://youtu.be/-DQYnApAFHM
+
 PART 2 SERVER SETUP: https://youtu.be/eSL5CNMTRCo
 
 
