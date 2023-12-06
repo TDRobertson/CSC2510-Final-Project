@@ -1,5 +1,16 @@
+*****COMMON ISSUES AND TROUBLESHOOTING METHODS*****
+
 There will be several common issues that can be experienced throughout the server setup, most of them have been addressed in their relevant file sections. 
-But I will also cover expected problems that might occur in this file. Note that Stack Overflow is a valuable resource for solving many problems.
+But I will also cover expected problems that might occur in this file. Note that Stack Overflow is a valuable resource for solving many problems. Note that all
+of my provided files have been extensively tested and confirmed to work within the given setup environment. If you modify your environment in a different 
+manner from my own, it will likely require extensive changes to ensure compatability. Use everything in this guide as general knowledge to help you
+set up a server per these specifications.
+
+Note that for any logging actions you can add the -vvv command when running the file to enable verbose logging functions, this will give you a 
+signficantly more detailed log output to help you determine any errors at any specific step.
+
+***MAKE SURE your generated ssh keys are added to your github if you plan on cloning any repositories into the servers. Your keys will not be able to authenticate 
+and work if you do not add them to your account under settings > SSH and GPG Keys.
 
 1. Server setup
 When setting up the servers on Google Cloud Platform, make sure your ansible management server is set up with centOS, if you use Debian servers
@@ -23,8 +34,11 @@ nano, git, ansible, and cron jobs. You can do this using sudo yum install comman
 The Debian servers will not need any manual installations, everything they need will be covered by the ansible playbooks.
 
 Ansible Playbooks:
-Ansible playbooks use YAML for their language. YAML is whitespace sensitive. Probably the most common issues you find from setting these up will be caused by 
-improper white spacing between lines. all new lines will be 2 spaces over relative to the Play you are currently working on.
+    YAML:
+    Ansible playbooks use YAML for their language. YAML is whitespace sensitive. Probably the most common issues you find from setting these up will be caused by 
+    improper white spacing between lines. all new lines will be 2 spaces over relative to the Play you are currently working on. YAML DOES NOT allow tabs for indentation
+    you must manually use spaces. All YAML files should start with --- to indicate the beginning of the document.
+
 Example:
 
 ---
@@ -39,10 +53,13 @@ Other common issues will be caused by permission problems associated with bash f
 commands on the hosts as root user. So all SSH keys will need to be uploaded to the respective root directories FROM the remote users source folders. 
 The public key should go to the authorized_key file to allow ssh connections and the private key needs to be specified to the .ssh folder to allow authentication 
 for git cloning. Ensure the ssh key folders have the correct permissions 0600 specified in the ansible play so they can be used properly. And ensure the bash scripts
-you have to copy from the AMS and send over to the hosts also have execute privileges specified in its ansible play as well.
+you have to copy from the AMS and send over to the hosts also have execute privileges specified in its ansible play as well. When copying from the AMS to the host, you will need to
+either create or have created the file directory to avoid errors. My ansible playbook accounts for this already, but if you set up your own ensure you account for this.
 
 Note that if you get any errors from running your ansible playbooks, it will give you a distinct message after running each play to help you navigate and find out what 
 the specific error is. Googling the problem for Stack Overflow documentation is a good first step to solving the issues if you don't already know how.
+All ansible.builtin functions have a preset list of actions they can make, if you use an incorrect action not available to that function. It will print off an error
+message telling you which tasks/commands are available for said function. Check the list and compare your own to see what might be causing the errors.
 
 Bash Scripts:
 Ensure all bash scripts on the AMS have the proper privileges to run using chmod 755 to set the owner, group, and others permissions (or any variation of permissions as needed).
@@ -50,3 +67,14 @@ the plays and scripts will all have PATH variables that will need changed to be 
 that should prevent most general issues from inproper user inputs. If you make your own scripts, make sure to include error handling and check methods for any expected
 issues you think may arise from improper handling. Ensure that all scripts follow the same directory setup locations I have used if you are copying my files. As I have 
 specifically set my playbooks, scripts, and cronjobs to work off those directories.
+
+CronJobs:
+cronjobs work off crontabs which are specific to each user on a server. They use a restricted PATH system, so be careful when specifying directories to be used in cronjobs. To
+make them work you will have to cd to and specify the absolute path for the directory and combine it using && specifying the absolute file path as well. Also double check
+the formatting of your cron jobs time setup * * * * * action argument is a general setup that will allow the cron job to perform the action every minute. If you don't disable 
+mail logs when setting up the cron jobs, it will inform you whenever there is a change, it runs, or there is an error. To see these errors messages use the command:
+
+cat /var/spool/mail/username
+
+This will allow you to see any logs associated with the running cron job.
+When passing variables using cron, for example if running my packages playbook using cron. directly pass them using integer after the command, not $integer.
