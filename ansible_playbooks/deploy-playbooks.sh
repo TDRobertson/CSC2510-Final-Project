@@ -4,17 +4,23 @@
 mkdir -p /home/tdrobertso42/logs
 LOGFILE="/home/tdrobertso42/logs/deployment.log"
 
-# Prompt for environment selection
-echo "Select the environment:"
-# The choices here should match the branch names in the repository
-# The playbook name should match the branch name with "playbook-" prepended
-# For example, if the branch name is "dev", the playbook name should be "playbook-dev.yml"
-echo "1) Dev"
-echo "2) Test"
-echo "3) Prod"
-# Updates to packages are done in all environments but does not run specific playbooks
-echo "4) Packages for all environments"
-read -p "Enter choice (1/2/3/4): " env_choice
+# Check if an argument was passed to the script
+if [ $# -eq 0 ]; then
+    # Prompt for environment selection
+    echo "Select the environment:"
+    # The choices here should match the branch names in the repository
+    # The playbook name should match the branch name with "playbook-" prepended
+    # For example, if the branch name is "dev", the playbook name should be "playbook-dev.yml"
+    echo "1) Dev"
+    echo "2) Test"
+    echo "3) Prod"
+    # Updates to packages are done in all environments but does not run specific playbooks
+    echo "4) Packages for all environments"
+    read -p "Enter choice (1/2/3/4): " env_choice
+else
+    # If an argument was passed, use it as the environment choice
+    env_choice=$1
+fi
 
 # Determine the playbook and branch based on the choice
 case $env_choice in
