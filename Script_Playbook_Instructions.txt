@@ -1,0 +1,91 @@
+*****SCRIPT PLAYBOOK INSTRUCTIONS*****
+This text document will explain the setup, useage, and goals of each provided file in ansible_playbooks, these files are used to setup
+the Ansible Management Server (AMS), the webservers, and the webserver + database hybrids. They accomplish this via the use of bash scripts
+deploying ansible-playbooks and well as a cronjob to keep all the servers up to date with required packages. For details on how the server itself is set up
+see the Server_Setup_Instructions.txt file. All of the files are heavily commented to make understanding the purpose of the code as easy as possible. The 
+deployment bash script in particular also has comments explaining how to change the playbook environments used.
+
+NOTE: For all scripts that use my vms username of tdrobertso42 in its variable or PATH, simply replace them with the specific username of your own vm.
+
+PLAYBOOKS:
+There are 4 individual playbooks to be used for server creation. Note that the hosts are specified in the ansible hosts file.
+These playbooks are ran via the deploy-playbook.sh file which takes user inputs 1-4 to run the individual playbooks on its intended environment.
+Cronjob is setup to run argument 4 every minute to ensure all environments are up to date. Playbooks are ordered below based on input selection for deployment bash script. 
+All playbooks are ran under the assumption that the playbooks and bash scripts are located in /home/username/ansible_playbooks/ directories. They will have to be modified
+for useage in different directories.
+
+1. playbook-dev.yml
+    This playbook installs the following packages on target hosts in Dev Environment:
+        1. Apache2 on target host webservers and hybrid servers.
+        2. NodeJS on target host webservers and hybrid servers.
+        3. Git on target host webservers and hybrid servers.
+        4. MariaDB on target 
+    
+    ***AMS to Remote SSH Authentication***
+    Additionally, it copies the SSH keys from the Ansible Management Server and sends them encrypted to the target host Dev environment root folders.
+    The public key is sent to the authorized_key folder to allow ssh access to the vm, the private key is sent to the .ssh folder to
+    allow it to authenticate to github repositories. Once the keys are sent over, they are activated via a script copied and sent over from the AMS
+    to execute and activate the remote hosts ssh agent and adding the keys from the root directories.
+    In order to avoid authentication prompts which require user input, githubs key is added to the known_hosts folder to skip fingerprint authentication.
+    
+    After the keys are copied over the remote servers can clone in github repositories specified in the repo url variable. If the target repo has specific known
+    branches to copy over, they can be specified via the branch_name variable which takes input for the branch name from the deployment script. The script simply has
+    to be modified with the known names to pass the arguments directly to the ansible playbooks and into the specified directly. In this case, the target directory is
+    the html/index file created by Apache2 installation to allow deployment of the "web app" contained within. 
+    The playbook has several error handling methods specified within it to check if the folder exists, doesn't exist, is empty, or is non-empty. These checks create flags within 
+    the ansible playbook which will then make decisions accordingly.
+
+    For example, if the repo doesn't exist, or it does exist and is empty, the playbooks will either create the folder and clone the repo to the destination, or it will clone the repo
+    directly into the already existing folder if its empty. Whereas if the folder isn't empty or the playbooks have created the folder, it will update the existing repository or clone
+    it into the folder destination.
+
+2. playbook-test 
+    This playbook has all the same functions as playbook-dev, just updated comments and variable names to make it work for the test environment.
+
+3. playbook-prod 
+    This playbook has all the same functions as playbook-dev, just updated comments and variable names to make it work for the test environment.
+
+4. playbook-packages
+    This playbook simply installs the following packages on EVERY host in Dev, Test, and Prod environments:
+        1. Apache2 on target host webservers and hybrid servers.
+        2. NodeJS on target host webservers and hybrid servers.
+        3. Git on target host webservers and hybrid servers.
+        4. MariaDB on target 
+    Additionally, this playbook is the target playbook for the servers automated cron jobs. The cronjob will run this playbook every minute to ensure
+    that all the environments are up to date with the required packages needed for basic operations.
+
+BASH SCRIPTS:
+There are two bash scripts required for server operations. The addSSH.sh script is simply copied and sent over to the target host servers to activate its root ssh-agent and
+add the transferred ssh keys to be used for git automations. The deploy-playbooks.sh script is used to run the ansible playbooks on selected environments based on user or 
+cron input. 
+
+deploy-playbooks.sh:
+For user input, if no input is entered when running the script it will echo messages to the terminal asking the user what environment they want to run the playbooks for.
+The selected environment is based on inputs 1-4, being Dev, Test, Prod, and All Packages respectively. it will then select the specified environment based on what the user enters. If the
+user enters any of the options beforehand as an argument, it will simply run the respective playbook.
+
+The bash script is designed to check for user arguments when its ran, specifically for argument 4 which is being used by the cronjob to automatically ensure all packages on every target
+host server is up to date once every minute. The absolute path is specified for the Packages playbook so the cronjob knows where to execute ansible-playbook commands. Otherwise it will have 
+PATH errors preventing it from running. If you modify your directories where the scripts are stored, be sure to be especially careful updating this. Because this assignment uses
+specific repos, the names and branches are defined in the playbook, if you are using it for general repos simply change the target variables or add a general playbook to clone input repos
+and change the variable selection to use that playbook.
+
+If an error occurs during the script, such as the user entering an incorrect input or if the ansible playbooks cannot be found, it will throw an error message and terminate the program.
+Regardless of the success or failure of the playbooks being ran, it will log all actions and outputs to a logs directory that it will create in the home directory. This log file could get
+very large over time due to the cron jobs constantly logging the file. So be mindful of space or change the logfile to append mode if you are only interested in the latest logs.
+
+CRONJOB:
+The cronjob.txt file explains the general formatting of cron jobs as well as giving the cronjob I used to automate my package playbook. Note that because of the nature of cronjobs limited PATH
+access, you will need to specify the absolute directory being used and combine it with the absolute file path in the directory using && commands on a single cronjob line. See the file for 
+the example. Note that when I installed cronjobs on the centOS server I also
+
+Cron Jobs follow the general format:
+# m h dom month dow command arguments
+# minute hour day_of_month day_of_week command_to_run target_of_command_if_applicable arguments_if_applicable
+
+The Cronjob I used for my automation is below.
+* * * * * cd /home/tdrobertso42/ansible_playbooks && /home/tdrobertso42/ansible_playbooks/deploy-playbooks.sh 4
+
+This cronjob will run every minute, of every hour, of every day of the month on any given day of the week, it moves to the target directory and then executes the target file.
+Which in this case is the deploy-playbooks.sh script. It automatically passes an argument of 4 so as the activate the Package Installation ansible playbook every minute
+to ensure all host environments are up to date with their required packages.
