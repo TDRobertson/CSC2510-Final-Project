@@ -1,4 +1,5 @@
 *****SERVER SETUP INSTRUCTIONS*****
+A youtube video will be provided to visually assist in setting up the servers, from start to finish.
 This guide assuming you are using Google Cloud Platform to set up your servers. You will create 7 total servers:
 1 ansiible management server running centOS to automate deployment of ansible playbooks and bash scripts
 3 web servers running Debian that allow http and https traffic
@@ -7,16 +8,21 @@ These servers should be located in different regions so as to avoid any potentia
 
 ***GENERAL OVERVIEW OF SETUP***
 These instructions will walk you through how to initially set up your servers required packages, passwords, sshd_config files, ansible host and config files, ansible playbooks, and required bash scripts. It will also have you set up cron jobs to automatically keep the required packages updated at set time intervals. Once everything is set up you will be able to run the Ansible Management System playbooks to enact changes on all your remote hosts so that you can install relevant packages or clone existing git repositories to them for deployment.
-
+During any script which relies on username, replace the username with your vms username.
 
 ***SERVER PACKAGE AND SCRIPT INSTALLATION SETUP***
 1) Change the root password for all of the vms by using sudo passwd (enter password) to something you will store in cleartext later on in the ansible host file.
+
 2) Then on all the Debian servers change the /etc/ssh/sshd_config using sudo nano and change PermitRootLogin to yes and change PasswordAuthentication to yes. You can save your changes using ctrl + x then entering y.
 (Optionally change password authentication on the AMS server as well if you plan on remotely controlling it outside of gcp login options).
+
 3) Install ansible on the Ansible Management Server (AMS) using sudo yum install ansible and accept all dependencies and packages.
+
 4) Navigate to the ansible config file on the AMS using sudo nano /etc/ansible/ansible.cfg
 (Note: You will need to install nano on the AMS, as it does not come pre-installed with centOS servers, use sudo yum install nano).
+
 5) In the ansible.cfg file uncomment the host_key_checking = False command around line 71.
+
 6) Now navigate to the AMS ansible host file using sudo nano /etc/ansible/hosts and set up all the groups for the webservers and hybrid servers using their internal IPs (which wont change between sessions) and adding in the ansible_user and ansible_password in grouped variables. (IMPORTANT: Spelling must be EXACTLY the same, or it will not work)
 Note* Logging in as root gives us elevated permissions for installing/running everything on the remote servers and is needed for how our playbooks and bash scripts will be set up.
 
@@ -54,9 +60,13 @@ Example:
  ansible_password=Mickey2023!
 
 7) Set up your ssh authentication key on the AMS with no password being used (for automation purposes) and in the default directory.
+
 8) Once the above steps are completed restart all of the servers to finalize changes.
+
 9) Log back into the AMS and create and move into a ansible_playbooks directory where you will store your playbooks and bash scripts.
+
 10) Copy the provided playbooks and scripts into your ansible_playbooks directory.
+
 11) Run the deploy-playbooks.sh shell script and select the environment you want to run the ansible playbook for (Dev, Test, Prod, Packages). For your initial run you will select packages to Install Apache2, NodeJS, Git, and MariaDB to their respective host servers that you setup in the hosts file.
 
 *****CRON JOB SETUP*****
@@ -80,4 +90,15 @@ Every user on a server has their own crontab they have to make
 * * * * * /absolute/path/to/directory && /absolute/path/to/file arguments
 Assuming you set the file up in ansible_playbooks like I did the correct cron setup using the server-wide crontab would be:
 * * * * * cd /home/username/ansible_playbooks && /home/username/ansible_playbooks/deploy-playbooks.sh 4
+
+
+
+*****CONCLUSION***** 
+If you correctly followed the setup contained within this guide you will have 7 completed servers, an ansible managemnent server, 3 web servers, and 3 webserver + database hybrid servers.
+Your Ansible Management Server should be able to completely handle all the required tasks via ansible playbooks, bash scripts, and cron jobs.
+The playbooks will successfully Install the relevant packages, as well as having the ability to clone git repos to target folders on remote hosts, whether the folders exist or not.
+Additionally, the bash script will keep a log of its actions, changes, and errors everytime it is ran, whether its done manually or automatically via cron.
+The logs will be sent to a logs folder in the home directory.
+
+Congratulations on your new servers being successfully created!
  
