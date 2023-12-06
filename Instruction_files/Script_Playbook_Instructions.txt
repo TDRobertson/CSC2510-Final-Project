@@ -60,6 +60,9 @@ add the transferred ssh keys to be used for git automations. The deploy-playbook
 cron input. 
 
 deploy-playbooks.sh:
+**IMPORTANT - The Deployment Script Options Dev, Test, and Prod also create and switch to the branch associated with the environment. So Running the dev option and cloning the target git repo to
+the apache2 startup folders on the development webservers and hybrid servers will copy and start the git repo on the dev branch, as opposed to main.
+
 For user input, if no input is entered when running the script it will echo messages to the terminal asking the user what environment they want to run the playbooks for.
 The selected environment is based on inputs 1-4, being Dev, Test, Prod, and All Packages respectively. it will then select the specified environment based on what the user enters. If the
 user enters any of the options beforehand as an argument, it will simply run the respective playbook.
