@@ -86,7 +86,8 @@ NOTE* for server security purposes you may want to use an ssh key with a passwor
 For your initial run you will select packages to Install Apache2, NodeJS, Git, and MariaDB to their respective host servers that you setup in the hosts file.
 
 *****CRON JOB SETUP*****
-This section will allow you to setup cron jobs to automatically run selected playbooks or scripts in order to keep the selected packages on the server up to date at all times. A cron job follows the general format of six fields:
+This section will allow you to setup cron jobs to automatically run selected playbooks or scripts in order to keep the selected packages on the server up to date at all times. 
+A cron job follows the general format of six fields:
 m h dom month dow command
 minute hour day_of_month day_of_week command_to_run target_of_command_if_applicable
 
