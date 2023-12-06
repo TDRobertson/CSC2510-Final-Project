@@ -17,9 +17,15 @@ if [ $# -eq 0 ]; then
     # Updates to packages are done in all environments but does not run specific playbooks
     echo "4) Packages for all environments"
     read -p "Enter choice (1/2/3/4): " env_choice
-else
+# if an argument was 4 and only 4, run the playbook for all environments
+# This is used for updating packages in all environments via cron
+elif [ $# -eq 1 ]; then
     # If an argument was passed, use it as the environment choice
     env_choice=$1
+    if [ "$env_choice" -eq 4 ]; then
+        # Absolute path of playbook for updating packages
+        PLAYBOOK="$PLAYBOOK_DIR/playbook-packages.yml"
+    fi
 fi
 
 # Determine the playbook and branch based on the choice
