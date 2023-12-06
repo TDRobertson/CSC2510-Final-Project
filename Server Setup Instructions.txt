@@ -75,9 +75,9 @@ Every user on a server has their own crontab they have to make
 
 4) Now you can edit the crontab, unfortunately it used vi as default experience, and that is terrible. So update your system to use nano as its default text editor with nano ~/.bash_profile, scroll to the bottom and enter export VISUAL="nano" at the bottom and save the changes. Then reload the bash profiles using . ~/.bash_profile to implement the changes.
 
-5) Now open either your individuals crontab using crontab -e or the system-wide crontabs using sudo nano /etc/crontab (on centOS the default crontab isn't populated with any commands so its simpler to use the system-wide crontab, you just have to specify the username before the command to be executed). 
+5) Now open either your individuals crontab using crontab -e or the system-wide crontabs using sudo nano /etc/crontab (on centOS the default crontab isn't populated with any commands telling you how to use it, the server-wide crontab, however, does). 
 6) Set the cron job to run your packages.yml ansible playbook every minute of every day by using the deploy-playbooks bash script taking the input of 4 for packages:
-* * * * * /path/to/deploy-playbooks.sh 4
+* * * * * /absolute/path/to/directory && /absolute/path/to/file arguments
 Assuming you set the file up in ansible_playbooks like I did the correct cron setup using the server-wide crontab would be:
-* * * * * username /home/username/ansible_playbooks/deploy-playbooks.sh 4
+* * * * * cd /home/username/ansible_playbooks && /home/username/ansible_playbooks/deploy-playbooks.sh 4
  
