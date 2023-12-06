@@ -116,11 +116,11 @@
   # Clone the repository to target servers for Prod Environment
   - name: Clone Repository
     hosts: webserversprod hybridsprod
-    vars:
+   vars:
       # The URL of the Git repository to clone from
       repo_url: "git@github.com:ttu-bburchfield/swollenhippofinal.git"
       branch_name: "{{ branch }}" # Change for each environment.
-      dest: "/root/var/www/html"
+      dest: "/root/var/www/html/swollenhippofinal"
     tasks:
       # Check if directory exists
       - name: Check if the directory exists
@@ -137,10 +137,10 @@
 
       # Check if the directory is empty if it exists
       - name: Check if the directory is empty if it exists
-        ansible.builtin.command: find "{{ dest }}" -mindepth 1 -print -quit
+        ansible.builtin.shell: ls -A "{{ dest }}"
         register: is_directory_empty
-        changed_when: False
-        failed_when: False
+        failed_when: false
+        changed_when: false
         check_mode: no
         when: repo_exists.stat.exists
 
