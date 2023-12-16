@@ -1,13 +1,8 @@
 Project Title: Automated Server Configuration, Deployment, and Maintenance for Multiple Environments
 CSC2510-Final-Project
 
-YOUTUBE PLAYLIST LINKS FOR VISUAL GUIDES:
-Playlist link: https://www.youtube.com/playlist?list=PLGAWosIlmkk8iI2OqVyvkXCwwLPJSW_l0 
-
-PART 1 SERVER SETUP: https://youtu.be/-DQYnApAFHM
-
-PART 2 SERVER SETUP: https://youtu.be/eSL5CNMTRCo
-
+Youtube Playlist:
+Temporarily removed until videos are improved.
 
 This repository will include the instructions, files, and visuals needed to set up servers on Google Cloud Platform per CSC2510 Specifications.
 The users will be able to set up seven total servers, an ansible management server running centOS to manage package, script deployments, and cron jobs.
